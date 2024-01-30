@@ -4,13 +4,20 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.tfs.q1jwa.model.Reagent;
 import com.tfs.q1jwa.service.ReagentService;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 @RestController
 @RequestMapping("/api/reagents")
+@Validated
 public class ReagentController {
 	@Autowired
 	private ReagentService reagentService;
@@ -26,12 +33,12 @@ public class ReagentController {
 	}
 
 	@PostMapping
-	public Reagent createReagent(@RequestBody Reagent reagent) {
+	public Reagent createReagent(@Valid @RequestBody Reagent reagent) {
 		return reagentService.save(reagent);
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<Reagent> updateReagent(@PathVariable Long id, @RequestBody Reagent reagentDetails) {
+	public ResponseEntity<Reagent> updateReagent(@PathVariable Long id, @Valid @RequestBody Reagent reagentDetails) {
 		return reagentService.findById(id).map(reagent -> {
 			reagent.setName(reagentDetails.getName());
 			reagent.setPartNumber(reagentDetails.getPartNumber());
@@ -50,7 +57,8 @@ public class ReagentController {
 	}
 
 	@GetMapping("/search")
-	public List<Reagent> searchReagents(@RequestParam String query) {
+	public List<Reagent> searchReagents(
+			@RequestParam @NotNull(message = "query is mandatory") @Size(max = 256, message = "query must be less than 256 characters") String query) {
 		return reagentService.search(query);
 	}
 }
